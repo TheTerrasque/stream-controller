@@ -18,6 +18,8 @@ from  . import views as V
 
 urlpatterns = [
     path('', V.streams, name='streams'),
+    path('new_account_setup', V.initial_account_setup, name='initial_account_setup'),
     path('stream/<int:stream_id>', V.stream, name='stream'),
     path('stream/<int:stream_id>/play', V.play, name='play'),
+    path('stream/<int:stream_id>/stop', V.stop, name='stop'),
 ]

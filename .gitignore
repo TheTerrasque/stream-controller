@@ -1,3 +1,4 @@
 *.pyc
 upload/
 db.sqlite3
+docker/ffmpeg
