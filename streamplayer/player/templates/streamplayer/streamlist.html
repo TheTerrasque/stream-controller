@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Streams</h2>
+    <ul>
+        {% for stream in object_list %}
+            <li>{{ stream.name }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

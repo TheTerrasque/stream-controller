@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+streams
+activestream
+playlists
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h3>{{ stream.name }}</h3>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col">
+            <div class="btn-group">
+                {% for stream in streams %}
+                <a href="{{ stream.get_absolute_url }}" class="btn 
+                    {% if stream.id == activestream.id %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    {{ stream.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col">
+            {%if activestream.link %}
+            <a href="{{ activestream.link}}" target="_new">Open streaming page</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row m-4">
+        <div class="col">
+            <h4>Currently playing</h4>
+        </div>
+        <div class="col">
+            {{ activestream.get_active_playlist }}
+        </div>
+        <div class="col">
+            {{ activestream.get_active_playlist.active_film }}
+        </div>
+        <div class="col">
+            {% if activestream.get_stream_player.playlist %}
+                <form action="/stream/{{ activestream.id }}/stop" method="post">
+                    <button type="submit" value="stop" name="action" class="btn btn-danger">Stop</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <h4>Playlists</h4>
+            <i>Note: It's normal to take some seconds and up to half a minute between changing here and it showing on
+                stream</i>
+            {% for playlist in playlists %}
+            <form action="{{ activestream.get_play_url }}" method="post" class="p-1">
+                {% csrf_token %} 
+                <input type="hidden" name="playlist" value="{{ playlist.id }}">
+                <div class="btn-group w-75" role="group">
+                    <button type="submit" class="btn 
+                    {% if activestream.active_playlist.id == playlist.id %}btn-primary{% else %}btn-outline-primary{% endif %} 
+                    w-50">
+                        {{playlist.name}}
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button id="btnGroupDrop1" type="button" class="btn 
+                            {% if activestream.active_playlist.id == playlist.id %}btn-primary{% else %}btn-outline-primary{% endif %} 
+                            dropdown-toggle w-25" data-bs-toggle="dropdown" aria-expanded="false">
+                            Files
+                        </button>
+
+                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            {% for film in playlist.get_films %}
+                            <button type="submit" value="{{ film.id }}" name="fileid"
+                                class="btn 
+                                {% if activestream.active_playlist.active_film.id == film.id %}btn-primary{% else %}btn-outline-primary{% endif %} 
+                                w-100">{{film}}</button>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
