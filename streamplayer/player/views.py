@@ -9,6 +9,7 @@ from .forms import NewAdminAccountForm
 def initial_account_setup(request):
     if User.objects.exists():
         return redirect("streams")
+        
     if request.method == "POST":
         form = NewAdminAccountForm(request.POST)
         if form.is_valid():
@@ -25,7 +26,7 @@ def streams(request):
     stream = Stream.objects.first()
     if stream:
         return redirect(stream)
-        
+
     return render(request, 'streamplayer/nostream.html')
 
 def stream(request, stream_id):

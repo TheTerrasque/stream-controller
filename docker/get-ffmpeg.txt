@@ -1,0 +1,1 @@
+Please download latest from https://www.johnvansickle.com/ffmpeg/ and place "ffmpeg" in this folder

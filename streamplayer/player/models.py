@@ -130,6 +130,11 @@ class Stream(models.Model):
         self.active_playlist = playlist
         self.save()
 
+    def stop_playing(self):
+        self.active_playlist = None
+        self.save()
+        self.get_stream_player().streamer.stop()
+
     def get_stream_player(self) -> Player:
         if not self.id in STREAMPLAYERS:
             self.active_playlist = None
