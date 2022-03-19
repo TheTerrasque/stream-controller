@@ -1,4 +1,3 @@
-from tkinter import E
 from .stream import FFMPEG_STREAMER
 from threading import Thread
 import time
@@ -66,7 +65,7 @@ class Player:
 
     def play_playlist(self, playlist, startfilm=None):
         self.playlist = playlist
-        self.films = playlist.get_films()
+        self.films = list(playlist.get_films())
         
         if startfilm:
             self.active_film_index = self.films.index(startfilm)

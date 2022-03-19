@@ -10,25 +10,27 @@ from django.contrib.auth.decorators import login_required
 
 def initial_account_setup(request):
     if User.objects.exists():
-        return redirect("streams")
+        return redirect("index")
 
     if request.method == "POST":
         form = NewAdminAccountForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("streams")
+            return redirect("index")
     else:
         form = NewAdminAccountForm()
     return render(request, 'streamplayer/initial_account_setup.html', {'form': form})
 
-def streams(request):
+def index(request):
     if not User.objects.exists():
         return redirect("initial_account_setup")
-
     stream = Stream.objects.first()
     if stream:
         return redirect(stream)
+    return redirect("nostream") 
 
+@login_required
+def nostream(request):
     return render(request, 'streamplayer/nostream.html')
 
 @login_required

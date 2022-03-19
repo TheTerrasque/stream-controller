@@ -43,7 +43,8 @@ playlists
         </div>
         <div class="col">
             {% if player.playlist %}
-                <form action="/stream/{{ activestream.id }}/stop" method="post">
+                <form action="{{ activestream.get_stop_url }}" method="post">
+                    {% csrf_token %}
                     <button type="submit" value="stop" name="action" class="btn btn-danger">Stop</button>
                 </form>
             {% endif %}

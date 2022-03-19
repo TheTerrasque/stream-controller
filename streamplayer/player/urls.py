@@ -17,7 +17,8 @@ from django.urls import path
 from  . import views as V
 
 urlpatterns = [
-    path('', V.streams, name='streams'),
+    path('', V.index, name='index'),
+    path('nostream/', V.nostream, name='nostream'),
     path('new_account_setup', V.initial_account_setup, name='initial_account_setup'),
     path('stream/<int:stream_id>', V.stream, name='stream'),
     path('stream/<int:stream_id>/play', V.play, name='play'),

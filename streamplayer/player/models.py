@@ -89,6 +89,9 @@ class Stream(models.Model):
     def get_absolute_url(self):
         return reverse('stream', kwargs={'stream_id' : self.pk})
 
+    def get_stop_url(self):
+        return reverse('stop', kwargs={'stream_id' : self.pk})
+
     def get_play_url(self):
         return reverse('play', kwargs={'stream_id' : self.pk})
 
