@@ -52,49 +52,16 @@ class Playlist(models.Model):
     name = models.CharField(max_length=255)
     repeat = models.BooleanField(default=False)
     films = models.ManyToManyField(Film, through=PlaylistFilm)
-    active_film = models.ForeignKey(Film, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
-    next_film = models.ForeignKey(Film, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    active = models.BooleanField(default=True)
+
+    def is_active(self):
+        return self.active and self.get_films().exists()
 
     def get_films(self):
         return self.films.all()
 
     def get_films_count(self):
         self.get_films().count()
-
-    def set_active_film(self, film):
-        if self.active_film != film:
-            self.active_film = film
-            self.save()
-        return film
-
-    def find_next(self, film):
-        films = list(self.get_films())
-
-        if not film:
-            return films[0]
-
-        prev_film = None
-        for f in films:
-            if prev_film and prev_film.id == film.id:
-                return f
-            prev_film = f
-
-        if self.repeat:
-            return films[0]
-
-        return None
-
-    def set_next(self, film):
-        self.next_film = film
-        self.active_film = film
-        self.save()
-
-    def next(self) -> Union[Film, None]:
-        film = self.next_film
-        self.active_film = film
-        self.next_film = self.find_next(film)
-        self.save()
-        return self.active_film
 
     def __str__(self):
         return self.name
@@ -125,15 +92,11 @@ class Stream(models.Model):
     def get_play_url(self):
         return reverse('play', kwargs={'stream_id' : self.pk})
 
-    def play_playlist(self, playlist):
-        self.get_stream_player().play_playlist(playlist)
-        self.active_playlist = playlist
-        self.save()
+    def play_playlist(self, playlist, film):
+        self.get_stream_player().play_playlist(playlist, film)       
 
     def stop_playing(self):
-        self.active_playlist = None
-        self.save()
-        self.get_stream_player().streamer.stop()
+        self.get_stream_player().stop()
 
     def get_stream_player(self) -> Player:
         if not self.id in STREAMPLAYERS:

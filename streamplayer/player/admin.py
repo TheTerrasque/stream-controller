@@ -11,8 +11,7 @@ class FilmAdmin(admin.ModelAdmin):
 
 @admin.register(Playlist)
 class PlaylistAdmin(admin.ModelAdmin):
-    list_display = ('name', "repeat",'get_films_count' , 'active_film')
-    exclude = ('next_film',"active_film")
+    list_display = ('name', "repeat",'get_films_count')
     inlines = [PlaylistFilmInline]
 
 @admin.register(Stream)

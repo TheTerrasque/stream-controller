@@ -4,12 +4,14 @@ from django.shortcuts import redirect
 # import django user model
 from django.contrib.auth.models import User
 from .forms import NewAdminAccountForm
+# import login_required
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def initial_account_setup(request):
     if User.objects.exists():
         return redirect("streams")
-        
+
     if request.method == "POST":
         form = NewAdminAccountForm(request.POST)
         if form.is_valid():
@@ -29,17 +31,20 @@ def streams(request):
 
     return render(request, 'streamplayer/nostream.html')
 
+@login_required
 def stream(request, stream_id):
     stream = Stream.objects.get(pk=stream_id)
     streams = Stream.objects.all()
     playlists = Playlist.objects.all()
     return render(request, 'streamplayer/stream.html', {'activestream': stream, 'playlists': playlists, 'streams': streams})
 
+@login_required
 def stop(request, stream_id):
     stream: Stream = Stream.objects.get(pk=stream_id)
     stream.get_stream_player().stop()
     return redirect("stream", stream_id=stream_id)
 
+@login_required
 def play(request, stream_id):
     if request.method == "POST":
         stream: Stream = Stream.objects.get(pk=stream_id)
@@ -50,6 +55,5 @@ def play(request, stream_id):
             film = None
             if fileid:
                 film = Film.objects.get(pk=fileid)
-            playlist.set_next(film)
-            stream.play_playlist(playlist)
+            stream.play_playlist(playlist, film)
     return redirect("stream", stream_id=stream_id)
