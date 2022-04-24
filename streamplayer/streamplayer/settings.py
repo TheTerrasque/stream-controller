@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET") or 'django-insecure-1)#w^_hdm9g*kb0a!)on
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
+CSRF_TRUSTED_ORIGINS = [os.getenv("DJANGO_ALLOWED_HOST") or "http://localhost:8000"]
 # Application definition
 
 INSTALLED_APPS = [

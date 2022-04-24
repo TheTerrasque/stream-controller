@@ -10,6 +10,7 @@ COPY streamplayer/ /app/
 COPY docker/ffmpeg /app/ffmpeg
 COPY docker/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
+
 ENV FFMPEG_PATH=/app/ffmpeg
 
 EXPOSE 8000

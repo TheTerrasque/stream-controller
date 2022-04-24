@@ -1,1 +1,5 @@
-Please download latest from https://www.johnvansickle.com/ffmpeg/ and place "ffmpeg" in this folder
+Linux / Docker:
+    Please download latest from https://www.johnvansickle.com/ffmpeg/ and place "ffmpeg" in this folder
+
+Windows:
+    Get latest from https://www.gyan.dev/ffmpeg/builds/ and place "ffmpeg.exe" in this folder

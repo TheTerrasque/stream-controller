@@ -2,3 +2,4 @@
 upload/
 db.sqlite3
 docker/ffmpeg
+docker/ffmpeg.exe

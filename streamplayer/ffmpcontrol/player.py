@@ -5,7 +5,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-FFMPEG_EXE  = os.getenv("FFMPEG_PATH", r"F:\\ffmpeg-4.4-full_build\\bin\\ffmpeg.exe")
+FFMPEG_EXE  = os.getenv("FFMPEG_PATH", r".\\bin\\ffmpeg.exe")
 
 class Player:
     playlist = None
@@ -46,6 +46,8 @@ class Player:
 
     def get_active_movie(self):
         if not self.films:
+            return None
+        if not self.streamer.is_playing():
             return None
         return self.films[self.active_film_index]
 

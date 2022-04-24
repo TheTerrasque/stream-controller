@@ -35,7 +35,7 @@ class Film(models.Model):
             subtitles = self.video.path.replace("\\", "/").replace(":", "\\:")
         else:
             subtitles = self.subtitle.path.replace("\\", "/").replace(":", "\\:")
-        return f"subtitles='{subtitles}'"
+        return f"subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize=30'"
 
 class PlaylistFilm(models.Model):
     playlist = models.ForeignKey('Playlist', on_delete=models.CASCADE)
