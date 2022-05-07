@@ -13,6 +13,7 @@ class Film(models.Model):
     subtitle = models.FileField(upload_to='subtitles', blank=True, null=True)
     name = models.CharField(max_length=255, blank=True)
     use_subtitle_in_video = models.BooleanField(default=False)
+    font_size = models.PositiveIntegerField(default=30)
 
     def delete(self, *args, **kwargs):
         if self.video:
@@ -35,7 +36,7 @@ class Film(models.Model):
             subtitles = self.video.path.replace("\\", "/").replace(":", "\\:")
         else:
             subtitles = self.subtitle.path.replace("\\", "/").replace(":", "\\:")
-        return f"subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize=30'"
+        return f"subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize={self.font_size}'"
 
 class PlaylistFilm(models.Model):
     playlist = models.ForeignKey('Playlist', on_delete=models.CASCADE)
