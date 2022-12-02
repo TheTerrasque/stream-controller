@@ -1,11 +1,8 @@
 from .stream import FFMPEG_STREAMER
 from threading import Thread
 import time
-import os
 import logging
 logger = logging.getLogger(__name__)
-
-FFMPEG_EXE  = os.getenv("FFMPEG_PATH", r".\\bin\\ffmpeg.exe")
 
 class Player:
     playlist = None
@@ -13,11 +10,11 @@ class Player:
     active_film_index = 0
     next_film_index = 0
 
-    def __init__(self, stream, streamer: FFMPEG_STREAMER = None) -> None:
+    def __init__(self, stream, streamer: FFMPEG_STREAMER = None) -> None:  # type: ignore
         if streamer:
             self.streamer = streamer
         else:
-            self.streamer = FFMPEG_STREAMER(FFMPEG_EXE, stream.url)
+            self.streamer = FFMPEG_STREAMER(stream.url)
             
         self.stream = stream
         self.worker = Thread(target=self.threadloop)
@@ -25,6 +22,8 @@ class Player:
         self.worker.start()
 
     def get_next(self):
+        if not self.playlist:
+            return None
         if self.next_film_index == None:
             return None
         self.active_film_index = self.next_film_index
@@ -80,5 +79,3 @@ class Player:
         
         except Exception as e:
             logger.warning("Exception", e)
-
-

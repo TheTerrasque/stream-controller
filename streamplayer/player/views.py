@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from player.models import Stream, Playlist, Film
 from django.shortcuts import redirect
@@ -39,6 +40,22 @@ def stream(request, stream_id):
     streams = Stream.objects.all()
     playlists = Playlist.objects.all()
     return render(request, 'streamplayer/stream.html', {'activestream': stream, 'playlists': playlists, 'streams': streams})
+
+@login_required
+def stream_info(request, stream_id):
+    stream: Stream = Stream.objects.get(pk=stream_id)
+    player = stream.get_stream_player()
+    data = {'name': stream.name, 
+        'url': stream.url, 
+        'link': stream.link,
+        "player": None,
+        "stop_url": stream.get_stop_url}
+    if (player.playlist):
+        data['player'] = {
+            'playlist': player.playlist.name,
+            'active_movie': player.get_active_movie,
+        }
+    return JsonResponse(data)
 
 @login_required
 def stop(request, stream_id):

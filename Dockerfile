@@ -8,10 +8,12 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY streamplayer/ /app/
 COPY docker/ffmpeg /app/ffmpeg
+COPY docker/ffprobe /app/ffprobe
 COPY docker/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 ENV FFMPEG_PATH=/app/ffmpeg
+ENV FFPROBE_PATH=/app/ffprobe
 
 EXPOSE 8000
 

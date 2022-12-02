@@ -3,3 +3,5 @@ upload/
 db.sqlite3
 docker/ffmpeg
 docker/ffmpeg.exe
+docker/ffprobe
+docker/ffprobe.exe

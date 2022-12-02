@@ -1,9 +1,19 @@
 from typing import List
 import subprocess
 from typing import TYPE_CHECKING
+from django.conf import settings
+
 
 if TYPE_CHECKING:
     from player.models import Film
+
+class FFMPEG_TOOLS:
+    @staticmethod
+    def get_file_info(path: str):
+        cmd  = [settings.FFPROBE_PATH, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        outs, errs = proc.communicate()
+        return outs.decode("utf-8")
 
 class FFMPEG_STREAMER:
     ARGS_OUTPUT = ["-vcodec", "libx264",
@@ -22,8 +32,8 @@ class FFMPEG_STREAMER:
 
     process = None
 
-    def __init__(self, ffmpeg_path: str, stream_path: str):
-        self.ffmpeg = ffmpeg_path
+    def __init__(self, stream_path: str):
+        self.ffmpeg = settings.FFMPEG_PATH
         self.stream_path = stream_path
 
     def get_cmd(self, video: "Film"):
@@ -80,8 +90,5 @@ class FFMPEG_STREAMER:
 
     def stop(self):
         if self.is_playing():
-            self.process.kill()
-            outs, errs = self.process.communicate()
-
-    def wait(self):
-        return self.process.communicate()
+            self.process.kill() # type: ignore
+            outs, errs = self.process.communicate() # type: ignore
