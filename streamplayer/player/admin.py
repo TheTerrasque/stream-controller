@@ -15,15 +15,15 @@ class FilmForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['audio_stream'].queryset = FilmStream.objects.filter(
-                                        film_id=self.instance.id)
+                                        film_id=self.instance.id).filter(type='audio')
         self.fields['subtitle_stream'].queryset = FilmStream.objects.filter(
-                                        film_id=self.instance.id)   
+                                        film_id=self.instance.id).filter(type='subtitle').filter(name__in=["ass", "subrip"])
 @admin.register(Film)
 class FilmAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'video', 'subtitle')
     fieldsets  = (
         (None, {"fields": ('video', "name")}),
-        ('Subtitle', {'fields': ('subtitle', 'use_subtitle_in_video', 'subtitle_stream','audio_stream', 'font_size')}),
+        ('Subtitle', {'fields': ('subtitle', 'subtitle_stream','audio_stream', 'font_size')}),
     )
     form = FilmForm
                                      

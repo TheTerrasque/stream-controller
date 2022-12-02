@@ -61,6 +61,16 @@ class FFMPEG_STREAMER:
 
             return ",".join(vf)
 
+        def get_maps():
+            maps = []
+            
+            # Audio
+            if video.audio_stream:
+                maps.extend(("-map", "0:v:0"))
+                maps.extend((f"-map", f"0:a:{video.audio_stream.index}"))
+
+            return maps
+
         args = [
             self.ffmpeg, 
             "-copyts", 
@@ -72,14 +82,15 @@ class FFMPEG_STREAMER:
             "-acodec", "aac",         
             "-strict", "-2", 
             "-ac", "2",
-            "-f", "flv",            
+            "-f", "flv",
+            *get_maps(),
             "-vf", get_videofilters(),
             "-af", get_audiofilters(),
             self.stream_path
             ]
         return args
 
-    def stream_file(self, video):
+    def stream_file(self, video: "Film"):
         self.stop()
         cmd = self.get_cmd(video)
         self.process = subprocess.Popen(cmd)

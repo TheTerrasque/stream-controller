@@ -1,3 +1,5 @@
+from collections import defaultdict
+import json
 from typing import Union
 from django.db import models
 from ffmpcontrol.player import Player
@@ -16,20 +18,20 @@ class FilmStream(models.Model):
     film = models.ForeignKey('Film', on_delete=models.CASCADE)
     index = models.IntegerField(default=0)
     language = models.CharField(max_length=255, default="")
+    title = models.CharField(max_length=255, default="")
 
     def __str__(self):
-        return f"{self.name} [{self.type}]"
+        return f"[{self.language}] {self.title} [{self.name}]"
 
 class Film(models.Model):
     video = models.FileField(upload_to='videos')
     name = models.CharField(max_length=255, blank=True)
-    subtitle = models.FileField(upload_to='subtitles', blank=True, null=True, help_text="Subtitle file")
-    use_subtitle_in_video = models.BooleanField(default=False, help_text="Use embedded subtitle track in video file")
+    subtitle = models.FileField(upload_to='subtitles', blank=True, null=True, help_text="External Subtitle file")
     font_size = models.PositiveIntegerField(default=30)
     videodata = models.JSONField(blank=True, null=True)
 
-    audio_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'audio'}, related_name="+")
-    subtitle_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'subtitle'}, related_name="+")
+    audio_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'audio'}, related_name="+", help_text="Audio Stream")
+    subtitle_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'subtitle'}, related_name="+", help_text="Embedded subtitle track")
 
     def delete(self, *args, **kwargs):
         if self.video:
@@ -39,15 +41,23 @@ class Film(models.Model):
         super().delete(*args, **kwargs)
 
     def get_movie_data(self):
-        self.videodata = FFMPEG_TOOLS.get_file_info(self.get_path())
-        for stream in self.videodata['streams']:
+        vdraw = FFMPEG_TOOLS.get_file_info(self.get_path())
+        data = json.loads(vdraw)
+        self.videodata = data
+        FilmStream.objects.filter(film=self).delete()
+        streamindex = defaultdict(int)
+
+        for stream in data['streams']:
+            print(stream)
             FilmStream.objects.create(
                 name=stream['codec_name'],
                 type=stream['codec_type'],
                 film=self,
-                index=stream['index'],
-                language=stream['tags']['language'] if 'language' in stream['tags'] else ""
+                index=streamindex[stream['codec_type']],
+                language=stream['tags']['language'] if 'language' in stream['tags'] else "",
+                title=stream['tags']['title'] if 'title' in stream['tags'] else ""
             )
+            streamindex[stream['codec_type']] += 1
         self.save()
 
     def get_path(self):
@@ -58,13 +68,16 @@ class Film(models.Model):
 
     def get_subtitle_string(self):
         # subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize=30'
-        if not self.subtitle and not self.use_subtitle_in_video:
+        if not self.subtitle and not self.subtitle_stream:
             return ""
-        if self.use_subtitle_in_video:
+        if self.subtitle_stream:
             subtitles = self.video.path.replace("\\", "/").replace(":", "\\:")
         else:
             subtitles = self.subtitle.path.replace("\\", "/").replace(":", "\\:")
-        return f"subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize={self.font_size}'"
+        substream = ""
+        if self.subtitle_stream:
+            substream = f":si={self.subtitle_stream.index}"
+        return f"subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize={self.font_size}'" + substream
 
 class PlaylistFilm(models.Model):
     playlist = models.ForeignKey('Playlist', on_delete=models.CASCADE)
@@ -137,3 +150,12 @@ class Stream(models.Model):
             logger.info("Creating new streamplayer for %s" % self.name)
             STREAMPLAYERS[self.id] = Player(self)  # type: ignore
         return STREAMPLAYERS[self.id] # type: ignore
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+# method for updating
+@receiver(post_save, sender=Film, dispatch_uid="update_stock_count")
+def update_film_data(sender, instance: Film, **kwargs):
+    if kwargs['created']:
+        instance.get_movie_data()
