@@ -81,7 +81,7 @@ DATABASES = {
 }
 
 FFMPEG_PATH  = os.getenv("FFMPEG_PATH", r"..\\docker\\ffmpeg.exe")
-FFPROBE_PATH  = os.getenv("FFMPEG_PATH", r"..\\docker\\ffprobe.exe")
+FFPROBE_PATH  = os.getenv("FFPROBE_PATH", r"..\\docker\\ffprobe.exe")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
