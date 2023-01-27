@@ -54,8 +54,8 @@ class Film(models.Model):
                 type=stream['codec_type'],
                 film=self,
                 index=streamindex[stream['codec_type']],
-                language=stream['tags']['language'] if 'language' in stream['tags'] else "",
-                title=stream['tags']['title'] if 'title' in stream['tags'] else ""
+                language=stream['tags']['language'] if "tags" in stream and 'language' in stream['tags'] else "<Unknown>",
+                title=stream['tags']['title'] if  "tags" in stream and 'title' in stream['tags'] else "<Untitled>"
             )
             streamindex[stream['codec_type']] += 1
         self.save()
