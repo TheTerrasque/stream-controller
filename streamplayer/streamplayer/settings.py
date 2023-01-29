@@ -126,3 +126,10 @@ MEDIA_ROOT = os.getenv("DJANGO_UPLOAD_FOLDER") or BASE_DIR / 'upload'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'streamplayer.BigChunkUploadHandler.ChunkedUploadHandler',
+]
+
+CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE = os.getenv("CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE")
