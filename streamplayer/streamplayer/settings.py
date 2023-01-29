@@ -122,6 +122,10 @@ STATIC_URL = 'static/'
 LOGOUT_REDIRECT_URL = '/'
 MEDIA_ROOT = os.getenv("DJANGO_UPLOAD_FOLDER") or BASE_DIR / 'upload'
 
+if os.getenv("FILE_UPLOAD_TEMP_DIR"):
+    os.makedirs(os.getenv("FILE_UPLOAD_TEMP_DIR"), exist_ok=True)
+    FILE_UPLOAD_TEMP_DIR = os.getenv("FILE_UPLOAD_TEMP_DIR")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
