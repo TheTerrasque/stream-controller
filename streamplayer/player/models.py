@@ -37,6 +37,7 @@ class Film(models.Model):
 
     workaround_for_10bit_hevc = models.BooleanField(default=False, help_text="Workaround for 10bit HEVC streams. Handles playback of them but might impact video quality.")
     video_tune_override = models.CharField(max_length=255, default="Off", choices=[(x, x) for x in VIDEO_TUNES])
+    volume_normalization = models.CharField(default="d", help_text="Normalize audio volume", choices=[("d", "Stream Default"), ("yes", "On"), ("no", "Off")], max_length=5)
 
     def delete(self, *args, **kwargs):
         if self.video:
@@ -97,9 +98,9 @@ class PlaylistFilm(models.Model):
 
 class Playlist(models.Model):
     name = models.CharField(max_length=255)
-    repeat = models.BooleanField(default=False)
     films = models.ManyToManyField(Film, through=PlaylistFilm)
     active = models.BooleanField(default=True)
+    linked_to = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="linked_from", help_text="If set, start playing linked playlist after this")
 
     def is_active(self):
         return self.active and self.get_films().exists()

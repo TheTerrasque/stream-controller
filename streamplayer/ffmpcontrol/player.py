@@ -6,10 +6,10 @@ logger = logging.getLogger(__name__)
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from player.models import Stream
+    from player.models import Stream, Playlist
 
 class Player:
-    playlist = None
+    playlist: "Playlist" = None
     films = []
     active_film_index = 0
     next_film_index = 0
@@ -29,15 +29,15 @@ class Player:
         if not self.playlist:
             return None
         if self.next_film_index == None:
+            if self.playlist.linked_to:
+                self.play_playlist(self.playlist.linked_to)
+                return self.get_next()
             return None
         self.active_film_index = self.next_film_index
         if self.next_film_index + 1 < len(self.films):
             self.next_film_index += 1
         else:
-            if self.playlist.repeat:
-                self.next_film_index = 0
-            else:
-                self.next_film_index = None
+            self.next_film_index = None
         return self.films[self.active_film_index]
 
     def stop(self):
@@ -74,7 +74,9 @@ class Player:
 
     def play_playlist(self, playlist, startfilm=None):
         self.playlist = playlist
+        print("Playing playlist", playlist.name)
         self.films = list(playlist.get_films())
+        print("Got films", self.films)
         
         if startfilm:
             self.active_film_index = self.films.index(startfilm)

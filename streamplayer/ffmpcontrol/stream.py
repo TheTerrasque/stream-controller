@@ -49,8 +49,9 @@ class FFMPEG_STREAMER:
             af = []
 
             # Normalize volume
-            if self.stream.settings.normalize_volume:
+            if (video.volume_normalization == "d" and self.stream.settings.normalize_volume) or video.volume_normalization == "on":
                 af.append("loudnorm=I=-16:LRA=11:TP=-1.5")
+
             if af:
                 return ["-af", ",".join(af)]
             return []

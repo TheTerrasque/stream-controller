@@ -24,14 +24,14 @@ class FilmAdmin(admin.ModelAdmin):
     fieldsets  = (
         (None, {"fields": ('video', "name")}),
         ('Subtitle', {'fields': ('subtitle', 'subtitle_stream','audio_stream', 'font_size')}),
-        ('Misc', {'fields': ('workaround_for_10bit_hevc', 'video_tune_override')}),
+        ('Misc', {'fields': ('workaround_for_10bit_hevc', 'video_tune_override', "volume_normalization")}),
     )
     form = FilmForm
                                      
 
 @admin.register(Playlist)
 class PlaylistAdmin(admin.ModelAdmin):
-    list_display = ('name', "repeat",'get_films_count')
+    list_display = ('name', "linked_to")
     inlines = [PlaylistFilmInline]
 
 @admin.register(Stream)
