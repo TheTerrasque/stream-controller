@@ -1,6 +1,6 @@
 from typing import Optional
 from django.contrib import admin
-from .models import Film, Playlist, Stream, PlaylistFilm, FilmStream
+from .models import Film, Playlist, Stream, PlaylistFilm, FilmStream, StreamSetting
 from django import forms
 # Register your models here.
 
@@ -24,6 +24,7 @@ class FilmAdmin(admin.ModelAdmin):
     fieldsets  = (
         (None, {"fields": ('video', "name")}),
         ('Subtitle', {'fields': ('subtitle', 'subtitle_stream','audio_stream', 'font_size')}),
+        ('Misc', {'fields': ('workaround_for_10bit_hevc', 'video_tune_override')}),
     )
     form = FilmForm
                                      
@@ -36,3 +37,7 @@ class PlaylistAdmin(admin.ModelAdmin):
 @admin.register(Stream)
 class StreamAdmin(admin.ModelAdmin):
     list_display = ('name', 'url')
+
+@admin.register(StreamSetting)
+class StreamAdmin(admin.ModelAdmin):
+    list_display = ('name', 'video_codec')

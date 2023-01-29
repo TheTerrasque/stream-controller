@@ -4,17 +4,21 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from player.models import Stream
+
 class Player:
     playlist = None
     films = []
     active_film_index = 0
     next_film_index = 0
 
-    def __init__(self, stream, streamer: FFMPEG_STREAMER = None) -> None:  # type: ignore
+    def __init__(self, stream: "Stream", streamer: FFMPEG_STREAMER = None) -> None:  # type: ignore
         if streamer:
             self.streamer = streamer
         else:
-            self.streamer = FFMPEG_STREAMER(stream.url)
+            self.streamer = FFMPEG_STREAMER(stream)
             
         self.stream = stream
         self.worker = Thread(target=self.threadloop)
@@ -49,6 +53,10 @@ class Player:
         if not self.streamer.is_playing():
             return None
         return self.films[self.active_film_index]
+
+    def update_streamer_info(self, stream: "Stream"):
+        self.stream = stream
+        self.streamer.stream = stream
 
     def threadloop(self):
         while True:

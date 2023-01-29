@@ -9,7 +9,9 @@ from django.urls import reverse
 import logging
 import os
 
-from ffmpcontrol.stream import FFMPEG_TOOLS
+from ffmpcontrol.stream import FFMPEG_TOOLS, \
+    VIDEO_CODECS, AUDIO_CODECS, VIDEO_PROFILES, \
+    ENCODING_PRESETS, VIDEO_TUNES, OUTPUT_FORMATS
 logger = logging.getLogger(__name__)
 
 class FilmStream(models.Model):
@@ -32,6 +34,9 @@ class Film(models.Model):
 
     audio_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'audio'}, related_name="+", help_text="Audio Stream")
     subtitle_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'subtitle'}, related_name="+", help_text="Embedded subtitle track")
+
+    workaround_for_10bit_hevc = models.BooleanField(default=False, help_text="Workaround for 10bit HEVC streams. Handles playback of them but might impact video quality.")
+    video_tune_override = models.CharField(max_length=255, default="Off", choices=[(x, x) for x in VIDEO_TUNES])
 
     def delete(self, *args, **kwargs):
         if self.video:
@@ -110,6 +115,26 @@ class Playlist(models.Model):
 
 STREAMPLAYERS = {}
 
+class StreamSetting(models.Model):
+    name = models.CharField(max_length=255)
+    video_codec = models.CharField(max_length=255, choices=[(x, x) for x in VIDEO_CODECS], default="libx264")
+    audio_codec = models.CharField(max_length=255, choices=[(x, x) for x in AUDIO_CODECS], default="aac")
+    reduce_scale = models.IntegerField(default="1280", help_text = "Reduce scale to this value if video is larger. Set to 0 to disable.")
+    video_profile = models.CharField(max_length=255, default="baseline", choices=[(x, x) for x in VIDEO_PROFILES])
+    encoding_preset = models.CharField(max_length=255, default="medium", choices=[(x, x) for x in ENCODING_PRESETS])
+    crf = models.IntegerField(default=23, help_text="Constant Rate Factor (0-51, lower is better quality but higher bitrate)")
+    audio_bitrate = models.IntegerField(default=192)
+    video_max_bitrate = models.IntegerField(default=5000, help_text="Maximum video bitrate in kbps")
+    video_buffer_size = models.IntegerField(default=10000, help_text="Video buffer size in kbps")
+    video_tune = models.CharField(max_length=255, default="Off", choices=[(x, x) for x in VIDEO_TUNES])
+    normalize_volume = models.BooleanField(default=True)
+    keyframe_interaval = models.IntegerField(default=30)
+    output_format = models.CharField(max_length=255, default="flv", choices=[(x, x) for x in OUTPUT_FORMATS])
+    audio_channels = models.IntegerField(default=2)
+
+    def __str__(self):
+        return f"{self.name}"
+
 class Stream(models.Model):
     name = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
@@ -117,6 +142,7 @@ class Stream(models.Model):
     active_playlist = models.ForeignKey(Playlist, on_delete=models.SET_NULL, null=True, blank=True)
     active = models.BooleanField(default=False)
     order = models.IntegerField(default=100)
+    settings = models.ForeignKey(StreamSetting, on_delete=models.PROTECT)
 
     class Meta:
         ordering = ['order']
@@ -149,6 +175,8 @@ class Stream(models.Model):
             self.save()
             logger.info("Creating new streamplayer for %s" % self.name)
             STREAMPLAYERS[self.id] = Player(self)  # type: ignore
+        else:
+            STREAMPLAYERS[self.id].update_streamer_info(self)  # type: ignore
         return STREAMPLAYERS[self.id] # type: ignore
 
 
