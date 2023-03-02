@@ -128,10 +128,24 @@ class StreamSetting(models.Model):
     video_max_bitrate = models.IntegerField(default=5000, help_text="Maximum video bitrate in kbps")
     video_buffer_size = models.IntegerField(default=10000, help_text="Video buffer size in kbps")
     video_tune = models.CharField(max_length=255, default="Off", choices=[(x, x) for x in VIDEO_TUNES])
+    zero_latency = models.BooleanField(default=True, help_text="Optimization for fast encoding and low latency streaming")
+    fast_decode = models.BooleanField(default=False, help_text="disables CABAC and the in-loop deblocking filter to allow for faster decoding on devices with lower computational power.")    
     normalize_volume = models.BooleanField(default=True)
     keyframe_interaval = models.IntegerField(default=30)
     output_format = models.CharField(max_length=255, default="flv", choices=[(x, x) for x in OUTPUT_FORMATS])
     audio_channels = models.IntegerField(default=2)
+    
+    def get_tunes(self, video_tune = None):
+        tunes = []
+        if not video_tune or video_tune == "Off":
+            video_tune = self.video_tune
+        if self.zero_latency:
+            tunes.append("zerolatency")
+        if self.fast_decode:
+            tunes.append("fastdecode")
+        if video_tune != "Off":
+            tunes.append(video_tune)
+        return tunes
 
     def __str__(self):
         return f"{self.name}"

@@ -14,6 +14,7 @@ RUN chmod +x /app/start.sh
 
 ENV FFMPEG_PATH=/app/ffmpeg
 ENV FFPROBE_PATH=/app/ffprobe
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 

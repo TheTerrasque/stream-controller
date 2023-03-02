@@ -2,7 +2,7 @@ from typing import List
 import subprocess
 from typing import TYPE_CHECKING
 from django.conf import settings
-
+import logging
 
 if TYPE_CHECKING:
     from player.models import Film, Stream
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 VIDEO_CODECS = ["libx264", "libx265", "libvpx-vp9"]
 AUDIO_CODECS = ["aac", "libmp3lame", "libopus"]
 VIDEO_PROFILES = ["baseline", "main", "high", "high10", "high422", "high444"]
-VIDEO_TUNES = ["Off", "film", "animation", "grain", "stillimage", "psnr", "ssim", "fastdecode", "zerolatency"]
+VIDEO_TUNES = ["Off", "film", "animation", "grain", "stillimage"]
 ENCODING_PRESETS = ["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow"]
 OUTPUT_FORMATS = ["flv", "mp4", "webm"]
 
@@ -86,12 +86,10 @@ class FFMPEG_STREAMER:
             return maps
 
         def get_tune():
-            if video.video_tune_override != "Off":
-                return ("-tune", video.video_tune_override)
-            if self.stream.settings.video_tune == "Off":
+            tunes = self.stream.settings.get_tunes(video.video_tune_override)
+            if not tunes:
                 return []
-            else:
-                return ("-tune", self.stream.settings.video_tune)
+            return ("-tune", ",".join(tunes))
 
         args = [
             self.ffmpeg, 
@@ -116,12 +114,14 @@ class FFMPEG_STREAMER:
             *get_audiofilters(),
             self.stream.url
             ]
+        print(" ".join(args))
+        logging.info("FFMPEG command: " + " ".join(args))
         return args
 
     def stream_file(self, video: "Film"):
         self.stop()
         cmd = self.get_cmd(video)
-        print("FFMPEG command:", " ".join(cmd))
+        logging.info("FFMPEG command: " + " ".join(cmd))
         self.process = subprocess.Popen(cmd)
         return self.process
     

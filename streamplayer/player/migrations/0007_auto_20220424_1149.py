@@ -9,12 +9,12 @@ def add_default_stream(apps, schema_editor):
     Stream.objects.create(name='Default stream', 
             url='rtmp://streamer/live/mystream', 
             active=True,
-            link='http://localhost:8998/video.html')
+            link='http://localhost:8081/video.html')
             
     Stream.objects.create(name='Test stream', 
             url='rtmp://streamer/live/testing', 
             active=True,
-            link='http://localhost:8998/video.html#testing')            
+            link='http://localhost:8081/video.html#testing')            
 
 class Migration(migrations.Migration):
 

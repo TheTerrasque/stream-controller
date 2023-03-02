@@ -1,0 +1,9 @@
+services:
+  streamcontroller:
+    build: .
+    ports:
+      - "8082:8000"  
+  streamer:
+    image: terrasque/docker-nginx-rtmp:2
+    ports:
+      - "8081:8080"
