@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ film }}{% endblock %}
+
+
+
+{% block content %}
+
+<h1>{{ film }}</h1>
+<div>Subtitle: {{ film.get_subtitle_name | default:"No subtitle" }}</div>
+<div>
+    <h2>Streams</h2>
+    <table>
+        <tr>
+            <th>Index</th>
+            <th>Type</th>
+            <th>Language</th>
+            <th>Format</th>
+        </tr>
+        {% for stream in film.get_streams %}
+        <tr>
+            <td>{{ stream.index }}</td>
+            <td>{{ stream.type }}</td>
+            <td>{{ stream.title }} [{{ stream.language }}]</td>
+            <td>{{ stream.name }}</td>
+            <td></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% if subtitles_search %}
+<h2>Subtitle Search</h2>
+<div><button id="searchBtn" class="btn btn-primary">Search for subtitles</button>
+    IMDB ID (optional):<input type="number" id="imdbid">
+</div>
+<table id="subtitles">
+    <tr>
+        <th>Language</th>
+        <th>Download</th>
+    </tr>
+</table>
+
+<script>
+    const searchBtn = document.getElementById("searchBtn");
+    const subtitles = document.getElementById("subtitles");
+
+    searchBtn.addEventListener("click", async function () {
+        searchBtn.disabled = true;
+        subtitles.innerHTML = "";
+        const imdbid = document.getElementById("imdbid").value;
+        if (imdbid) {
+            var response = await fetch("{% url 'subtitle_find' film.id %}" + "?imdb=" + imdbid);
+        } else {
+            var response = await fetch("{% url 'subtitle_find' film.id %}");
+        }
+        const data = await response.json();
+        console.log(data);
+        for (const subtitle of data.data) {
+            for (const file of subtitle.attributes.files) {
+                const row = document.createElement("tr");
+                const language = document.createElement("td");
+                const download = document.createElement("td");
+                const downloadLink = document.createElement("a");
+                downloadLink.href = "{% url 'subtitle_find' film.id %}" + "?subtitleid=" + file.file_id;
+                downloadLink.innerText = "Download";
+                language.innerText = file.file_name;
+                download.appendChild(downloadLink);
+                row.appendChild(language);
+                row.appendChild(download);
+                subtitles.appendChild(row);
+            }
+        }
+        searchBtn.disabled = false;
+    });
+</script>
+{% endif %}
+{% endblock %}

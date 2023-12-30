@@ -4,3 +4,5 @@ env vars:
     DJANGO_SQLITE_PATH
     DJANGO_SECRET
     DJANGO_ALLOWED_HOST
+    SUBTITLE_DEFAULT_SIZE
+    OPENSUBTITLES_API_KEY # https://www.opensubtitles.com/en/consumers

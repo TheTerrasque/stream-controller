@@ -126,6 +126,12 @@ if os.getenv("FILE_UPLOAD_TEMP_DIR"):
     os.makedirs(os.getenv("FILE_UPLOAD_TEMP_DIR"), exist_ok=True)
     FILE_UPLOAD_TEMP_DIR = os.getenv("FILE_UPLOAD_TEMP_DIR")
 
+try:
+    SUBTITLE_DEFAULT_SIZE = int(os.getenv("SUBTITLE_DEFAULT_SIZE", "23"))
+except:
+    print("Could not parse SUBTITLE_DEFAULT_SIZE, using default")
+    SUBTITLE_DEFAULT_SIZE = 23
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
@@ -136,4 +142,7 @@ FILE_UPLOAD_HANDLERS = [
     'streamplayer.BigChunkUploadHandler.ChunkedUploadHandler',
 ]
 
-CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE = os.getenv("CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE")
+# https://www.opensubtitles.com/en/consumers
+OPENSUBTITLES_API_KEY = os.getenv("OPENSUBTITLES_API_KEY")
+
+CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE = os.getenv("CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE") and int(os.getenv("CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE")) or 1024 * 1024

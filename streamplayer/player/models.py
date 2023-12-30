@@ -5,9 +5,12 @@ from django.db import models
 from ffmpcontrol.player import Player
 from os.path import basename
 from django.urls import reverse
+from django.conf import settings
 # Create your models here.
 import logging
 import os
+
+SUBTITLE_DEFAULT_SIZE = getattr(settings, "SUBTITLE_DEFAULT_SIZE", 23)
 
 from ffmpcontrol.stream import FFMPEG_TOOLS, \
     VIDEO_CODECS, AUDIO_CODECS, VIDEO_PROFILES, \
@@ -26,10 +29,10 @@ class FilmStream(models.Model):
         return f"[{self.language}] {self.title} [{self.name}]"
 
 class Film(models.Model):
-    video = models.FileField(upload_to='videos')
+    video = models.FileField(upload_to='videos', max_length=255, help_text="Video file")
     name = models.CharField(max_length=255, blank=True)
-    subtitle = models.FileField(upload_to='subtitles', blank=True, null=True, help_text="External Subtitle file")
-    font_size = models.PositiveIntegerField(default=30)
+    subtitle = models.FileField(upload_to='subtitles', blank=True, null=True, help_text="External Subtitle file", max_length=255)
+    font_size = models.PositiveIntegerField(default=SUBTITLE_DEFAULT_SIZE, help_text="Subtitle font size")
     videodata = models.JSONField(blank=True, null=True)
 
     audio_stream = models.ForeignKey('FilmStream', on_delete=models.CASCADE, blank=True, null=True, limit_choices_to={'type': 'audio'}, related_name="+", help_text="Audio Stream")
@@ -39,12 +42,26 @@ class Film(models.Model):
     video_tune_override = models.CharField(max_length=255, default="Off", choices=[(x, x) for x in VIDEO_TUNES])
     volume_normalization = models.CharField(default="d", help_text="Normalize audio volume", choices=[("d", "Stream Default"), ("yes", "On"), ("no", "Off")], max_length=5)
 
+    def add_subtitle_file(self, filename, content):
+        self.subtitle.save(filename, content)
+
     def delete(self, *args, **kwargs):
         if self.video:
             os.remove(self.video.path)
         if self.subtitle:
             os.remove(self.subtitle.path)
         super().delete(*args, **kwargs)
+
+    def video_length(self):
+        if self.videodata:
+            print(self.videodata)
+            return self.videodata['format']['duration']
+        return 0
+
+    def get_streams(self, type=None):
+        if type:
+            return self.filmstream_set.filter(type=type)
+        return self.filmstream_set.all()
 
     def get_movie_data(self):
         vdraw = FFMPEG_TOOLS.get_file_info(self.get_path())
@@ -72,6 +89,16 @@ class Film(models.Model):
     def __str__(self):
         return self.name or basename(self.video.name)
 
+    def get_absolute_url(self):
+        return reverse('film_info_page', kwargs={'film_id' : self.pk})
+
+    def get_subtitle_name(self):
+        if self.subtitle:
+            return basename(self.subtitle.name)
+        if self.subtitle_stream:
+            return "Stream: " + self.subtitle_stream.title
+        return ""
+    
     def get_subtitle_string(self):
         # subtitles='{subtitles}':force_style='FontName=ubuntu,Fontsize=30'
         if not self.subtitle and not self.subtitle_stream:
@@ -101,6 +128,7 @@ class Playlist(models.Model):
     films = models.ManyToManyField(Film, through=PlaylistFilm)
     active = models.BooleanField(default=True)
     linked_to = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="linked_from", help_text="If set, start playing linked playlist after this")
+    for_guild_movie = models.BooleanField(default=False)
 
     def is_active(self):
         return self.active and self.get_films().exists()
@@ -110,6 +138,9 @@ class Playlist(models.Model):
 
     def get_films_count(self):
         self.get_films().count()
+
+    def add_film(self, film: Film):
+        PlaylistFilm.objects.create(playlist=self, film=film)
 
     def __str__(self):
         return self.name
