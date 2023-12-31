@@ -13,25 +13,27 @@
     </select>
 </div>
 <form method="post" id="fileForm" enctype="multipart/form-data">
-    {% csrf_token %} {{ form }}
-        <div class="mt-3">
-            <div class="progress" role="progressbar" aria-label="Film upload bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                <div id="progressBar" class="progress-bar"
-                    style="width: 0%">
-                    0%
-                </div>
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <div class="mt-3">
+        <div class="progress" role="progressbar" aria-label="Film upload bar" aria-valuenow="0" aria-valuemin="0"
+            aria-valuemax="100">
+            <div id="progressBar" class="progress-bar" style="width: 0%">
+                0%
             </div>
+        </div>
         <div class="mt-2">
             <h3 id="status"></h3>
         </div>
     </div>
-    <button type="submit" id="submitBtn"
-        class="btn btn-primary">
+    <button type="submit" id="submitBtn" class="btn btn-primary">
         Upload video
     </button>
 </form>
 <div>
-    <h2>Uploaded films</h2>
+    <h2>Uploaded videos</h2>
     <ul id="uploadedfilms" class="list-group">
     </ul>
 </div>
@@ -54,7 +56,7 @@
         } else {
             xhr.open("POST", "{% url 'upload_film' %}", true);
         }
-        
+
 
         // Listen to the 'progress' event
         xhr.upload.onprogress = function (event) {
@@ -64,7 +66,7 @@
                 percentComplete = Math.round(percentComplete * 10) / 10;
                 // always have one decimal
                 percentComplete = percentComplete.toFixed(1);
-                
+
                 progressBar.style.width = percentComplete + '%';
                 progressBar.textContent = percentComplete + '%';
                 // calculate duration  

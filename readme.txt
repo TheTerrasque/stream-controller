@@ -6,3 +6,6 @@ env vars:
     DJANGO_ALLOWED_HOST
     SUBTITLE_DEFAULT_SIZE
     OPENSUBTITLES_API_KEY # https://www.opensubtitles.com/en/consumers
+
+build:
+    docker build . --push -t terrasque/streamcontrol:<ver>

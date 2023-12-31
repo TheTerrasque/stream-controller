@@ -53,12 +53,15 @@ def stream_info(request, stream_id):
         'url': stream.url, 
         'link': stream.link,
         "player": None,
-        "stop_url": stream.get_stop_url}
+        "stopUrl": stream.get_stop_url()}
     if (player.playlist):
         data['player'] = {
-            'playlist': player.playlist.name,
-            'active_movie': player.get_active_movie,
+            'activePlaylist': player.playlist.name,
+            'activePlaylistId': player.playlist.id,
+            'activeMovieTime': player.get_active_movie_time(),
         }
+        if player.get_active_movie():
+            data["player"]["activeMovie"] = player.get_active_movie().as_json()
     return JsonResponse(data)
 
 @login_required
@@ -97,7 +100,13 @@ def upload_film(request):
                 playlist.add_film(film)
 
             if form.cleaned_data['guild_movie']:
-                print("guild movie")
+                for playlist in Playlist.objects.filter(for_guild_movie=True):
+                    playlist.clear()
+                    for afilm in Film.objects.filter(special = "before_mainmovie"):
+                        playlist.add_film(afilm)
+                    playlist.add_film(film)
+                    for afilm in Film.objects.filter(special = "after_mainmovie"):
+                        playlist.add_film(afilm)
             return JsonResponse({'id': film.id, 
                                  "url": film.get_absolute_url(), 
                                  "name": str(film)})

@@ -5,3 +5,4 @@ docker/ffmpeg
 docker/ffmpeg.exe
 docker/ffprobe
 docker/ffprobe.exe
+*.side

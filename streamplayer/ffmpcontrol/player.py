@@ -4,15 +4,19 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from player.models import Stream, Playlist
+
+if TYPE_CHECKING:
+    from player.models import Film
 
 class Player:
     playlist: "Playlist" = None
     films = []
     active_film_index = 0
     next_film_index = 0
+    current_film_start_time = 0
 
     def __init__(self, stream: "Stream", streamer: FFMPEG_STREAMER = None) -> None:  # type: ignore
         if streamer:
@@ -47,12 +51,19 @@ class Player:
         self.active_film_index = 0
         self.next_film_index = 0
 
-    def get_active_movie(self):
+    def get_active_movie(self) -> Optional["Film"]:
         if not self.films:
             return None
         if not self.streamer.is_playing():
             return None
         return self.films[self.active_film_index]
+
+    def get_active_movie_time(self):
+        if not self.streamer.is_playing():
+            return 0
+        played = time.time() - self.current_film_start_time
+        total = self.get_active_movie().video_length()
+        return {"played": played, "total": total}
 
     def update_streamer_info(self, stream: "Stream"):
         self.stream = stream
@@ -67,6 +78,7 @@ class Player:
                         if next:
                             logger.info("Got next: %s" % next.video)
                             self.streamer.stream_file(next)
+                            self.current_film_start_time = time.time()
                 time.sleep(0.5)
             except Exception as e:
                 logger.warning("Player thread exception", e)

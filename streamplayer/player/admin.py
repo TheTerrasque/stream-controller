@@ -24,7 +24,7 @@ class FilmAdmin(admin.ModelAdmin):
     fieldsets  = (
         (None, {"fields": ('video', "name")}),
         ('Subtitle', {'fields': ('subtitle', 'subtitle_stream','audio_stream', 'font_size')}),
-        ('Misc', {'fields': ('workaround_for_10bit_hevc', 'video_tune_override', "volume_normalization")}),
+        ('Misc', {'fields': ('workaround_for_10bit_hevc', 'video_tune_override', "volume_normalization", "special")}),
     )
     form = FilmForm
                                      

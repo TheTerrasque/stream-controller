@@ -17,6 +17,8 @@ from ffmpcontrol.stream import FFMPEG_TOOLS, \
     ENCODING_PRESETS, VIDEO_TUNES, OUTPUT_FORMATS
 logger = logging.getLogger(__name__)
 
+SPECIAL_VIDEOS = ["before_mainmovie", "after_mainmovie"]
+
 class FilmStream(models.Model):
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
@@ -24,6 +26,8 @@ class FilmStream(models.Model):
     index = models.IntegerField(default=0)
     language = models.CharField(max_length=255, default="")
     title = models.CharField(max_length=255, default="")
+    # optional special choice for before_mainmovie, after_mainmovie, before_trailer, after_trailer
+     
 
     def __str__(self):
         return f"[{self.language}] {self.title} [{self.name}]"
@@ -41,6 +45,23 @@ class Film(models.Model):
     workaround_for_10bit_hevc = models.BooleanField(default=False, help_text="Workaround for 10bit HEVC streams. Handles playback of them but might impact video quality.")
     video_tune_override = models.CharField(max_length=255, default="Off", choices=[(x, x) for x in VIDEO_TUNES])
     volume_normalization = models.CharField(default="d", help_text="Normalize audio volume", choices=[("d", "Stream Default"), ("yes", "On"), ("no", "Off")], max_length=5)
+    special = models.CharField(max_length=255, blank=True, null=True, choices=[(x, x) for x in SPECIAL_VIDEOS]) 
+
+    def as_json(self):
+        return dict(
+            id=self.id,
+            name=str(self),
+            video=self.video.name,
+            subtitle=self.subtitle.name if self.subtitle else None,
+            font_size=self.font_size,
+            audio_stream=self.audio_stream.id if self.audio_stream else None,
+            subtitle_stream=self.subtitle_stream.id if self.subtitle_stream else None,
+            workaround_for_10bit_hevc=self.workaround_for_10bit_hevc,
+            video_tune_override=self.video_tune_override,
+            volume_normalization=self.volume_normalization,
+            special=self.special,
+            videodata=self.videodata
+        )
 
     def add_subtitle_file(self, filename, content):
         self.subtitle.save(filename, content)
@@ -55,7 +76,7 @@ class Film(models.Model):
     def video_length(self):
         if self.videodata:
             print(self.videodata)
-            return self.videodata['format']['duration']
+            return float(self.videodata['format']['duration'])
         return 0
 
     def get_streams(self, type=None):
@@ -69,9 +90,12 @@ class Film(models.Model):
         self.videodata = data
         FilmStream.objects.filter(film=self).delete()
         streamindex = defaultdict(int)
+        main10 = False
 
         for stream in data['streams']:
             print(stream)
+            if stream.get('profile') == "Main 10" and stream.get('codec_name') == "hevc":
+                main10 = True
             FilmStream.objects.create(
                 name=stream['codec_name'],
                 type=stream['codec_type'],
@@ -81,6 +105,8 @@ class Film(models.Model):
                 title=stream['tags']['title'] if  "tags" in stream and 'title' in stream['tags'] else "<Untitled>"
             )
             streamindex[stream['codec_type']] += 1
+        if main10:
+            self.workaround_for_10bit_hevc = True
         self.save()
 
     def get_path(self):
@@ -129,6 +155,9 @@ class Playlist(models.Model):
     active = models.BooleanField(default=True)
     linked_to = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="linked_from", help_text="If set, start playing linked playlist after this")
     for_guild_movie = models.BooleanField(default=False)
+
+    def clear(self):
+        self.films.clear()
 
     def is_active(self):
         return self.active and self.get_films().exists()

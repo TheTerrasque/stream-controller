@@ -6,9 +6,9 @@ RUN apt-get -y update && apt-get -y upgrade && apt-get install -y fontconfig ttf
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
-COPY streamplayer/ /app/
 COPY docker/ffmpeg /app/ffmpeg
 COPY docker/ffprobe /app/ffprobe
+COPY streamplayer/ /app/
 COPY docker/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 

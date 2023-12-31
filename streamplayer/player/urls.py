@@ -21,6 +21,7 @@ urlpatterns = [
     path('nostream/', V.nostream, name='nostream'),
     path('new_account_setup', V.initial_account_setup, name='initial_account_setup'),
     path('stream/<int:stream_id>', V.stream, name='stream'),
+    path('stream/<int:stream_id>.json', V.stream_info, name='stream-json'),
     path('stream/<int:stream_id>/play', V.play, name='play'),
     path('stream/<int:stream_id>/stop', V.stop, name='stop'),
     path('film/<int:film_id>.json', V.film_info, name='film_info'),
