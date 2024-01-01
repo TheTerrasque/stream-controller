@@ -75,7 +75,6 @@ class Film(models.Model):
 
     def video_length(self):
         if self.videodata:
-            print(self.videodata)
             return float(self.videodata['format']['duration'])
         return 0
 
@@ -93,7 +92,6 @@ class Film(models.Model):
         main10 = False
 
         for stream in data['streams']:
-            print(stream)
             if stream.get('profile') == "Main 10" and stream.get('codec_name') == "hevc":
                 main10 = True
             FilmStream.objects.create(
@@ -221,6 +219,9 @@ class Stream(models.Model):
 
     class Meta:
         ordering = ['order']
+
+    def get_json_info_url(self):
+        return reverse('stream-json', kwargs={'stream_id' : self.pk})
 
     def __str__(self):
         return self.name

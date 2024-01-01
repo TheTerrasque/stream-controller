@@ -62,7 +62,7 @@ class OpenSubtitleApi:
         data = self.session.post(self.base_url + "download", json={"file_id": id}).json()
         url = data.get("link")
         if not url:
-            print(data)
+            print("Did not find url in data:", data)
             return None
         data["content"] =  self.session.get(url).content
         return data

@@ -35,19 +35,20 @@ playlists
         <div class="col">
             <h4>Currently playing</h4>
         </div>
-        <div class="col">
+        <div class="col" id="currentPlaylist">
             {{ player.playlist }}
         </div>
-        <div class="col">
+        <div class="col" id="currentMovie">
             {{ player.get_active_movie }}
         </div>
-        <div class="col">
-            {% if player.playlist %}
-                <form action="{{ activestream.get_stop_url }}" method="post">
+        <div class="col" id="currentPlaytime">
+            0:00 / 0:00
+        </div>
+        <div class="col" id="stopPlaying">
+                <form action="{{ activestream.get_stop_url }}" method="post" id="stopPlayButton" style="display:none">
                     {% csrf_token %}
                     <button type="submit" value="stop" name="action" class="btn btn-danger">Stop</button>
                 </form>
-            {% endif %}
         </div>
     </div>
 
@@ -64,13 +65,14 @@ playlists
                 <div class="btn-group w-75" role="group">
                     <button type="submit" class="btn 
                     {% if player.playlist == playlist %}btn-primary{% else %}btn-outline-primary{% endif %} 
-                    w-50">
+                    w-50 playlistButton" id="playlist-button-{{ playlist.id }}">
                         {{playlist.name}}
                     </button>
                     <div class="btn-group" role="group">
-                        <button id="btnGroupDrop1" type="button" class="btn 
+                        <button type="button" class="btn 
                             {% if player.playlist == playlist %}btn-primary{% else %}btn-outline-primary{% endif %} 
-                            dropdown-toggle w-25" data-bs-toggle="dropdown" aria-expanded="false">
+                            dropdown-toggle w-25 playlistFilmSelector" data-bs-toggle="dropdown" aria-expanded="false"
+                            id="playlistFilmSelector-{{playlist.id}}">
                             Files
                         </button>
 
@@ -79,7 +81,7 @@ playlists
                             <button type="submit" value="{{ film.id }}" name="fileid"
                                 class="btn 
                                 {% if player.get_active_movie == film %}btn-primary{% else %}btn-outline-primary{% endif %} 
-                                w-100">{{film}}</button>
+                                w-100 playlistFilmButton" id="playlist-{{ playlist.id }}-film-button-{{ film.id }}">{{film}}</button>
                             {% endfor %}
                         </ul>
                     </div>
@@ -90,4 +92,92 @@ playlists
         </div>
     </div>
     {% endwith %}
+    <script>
+        const currentPlaytime = document.getElementById("currentPlaytime");
+        const currentMovie = document.getElementById("currentMovie");
+        const currentPlaylist = document.getElementById("currentPlaylist");
+
+        let playTime = 0;
+        let duration = 0;
+        let isPlaying = false;
+
+        function setPlayTime() {
+            currentPlaytime.innerText = formatTime(playTime) + " / " + formatTime(duration);
+            if (playTime >= duration) {
+                getStreamData();
+            }
+        }
+
+        function formatTime(time) {
+            let hours = Math.floor(time / 3600);
+            let minutes = Math.floor((time - (hours * 3600)) / 60);
+            let seconds = Math.floor(time % 60);
+
+            if (seconds < 10) {
+                seconds = "0" + seconds;
+            }
+
+            if (hours > 0) {
+                if (minutes < 10) {
+                    minutes = "0" + minutes;
+                }
+                return hours + ":" + minutes + ":" + seconds;
+            }
+
+            return minutes + ":" + seconds;
+        }
+
+        function setInactive(identifier) {
+            document.querySelectorAll(identifier).forEach(function (el) { el.classList.remove("btn-primary"); el.classList.add("btn-outline-primary"); });
+        }
+        function setActive(identifier) {
+            document.querySelectorAll(identifier).forEach(function (el) { el.classList.remove("btn-outline-primary"); el.classList.add("btn-primary"); });
+        }
+
+        function setNotPlaying() {
+            isPlaying = false;
+            currentMovie.innerText = "";
+            currentPlaylist.innerText = "Nothing playing";
+            currentPlaytime.innerText = "";
+            //hide stop button
+            document.getElementById("stopPlayButton").style.display = "none";
+            setInactive(".playlistButton");
+            setInactive(".playlistFilmButton");
+            setInactive(".playlistFilmSelector");
+        }
+
+        function setPlaying(playlist, film) {
+            isPlaying = true;
+            //show stop button
+            document.getElementById("stopPlayButton").style.display = "block";
+            setInactive(".playlistButton");
+            setInactive(".playlistFilmButton");
+            setInactive(".playlistFilmSelector");
+            setActive("#playlist-button-" + playlist);
+            setActive("#playlist-" + playlist + "-film-button-" + film);
+            setActive("#playlistFilmSelector-" + playlist);
+        }
+
+        function getStreamData() {
+            fetch("{{ activestream.get_json_info_url }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (! data.player || ! data.player.activeMovieTime) {
+                        setNotPlaying();
+                        return;
+                    }
+                    setPlaying(data.player.activePlaylistId, data.player.activeMovie.id);
+                    playTime = data.player.activeMovieTime.played;
+                    duration = data.player.activeMovieTime.total;
+                    if (playTime < duration) {
+                        setPlayTime();
+                    }
+                    currentMovie.innerText = data.player.activeMovie.name;
+                    currentPlaylist.innerText = data.player.activePlaylist;
+
+                });
+        }
+        setInterval(getStreamData, 1000);
+
+    </script>
 {% endblock %}
