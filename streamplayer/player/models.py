@@ -83,6 +83,15 @@ class Film(models.Model):
             return self.filmstream_set.filter(type=type)
         return self.filmstream_set.all()
 
+    def set_as_guild_movie(self):
+        for playlist in Playlist.objects.filter(for_guild_movie=True):
+            playlist.clear()
+            for afilm in Film.objects.filter(special = "before_mainmovie"):
+                playlist.add_film(afilm)
+            playlist.add_film(self)
+            for afilm in Film.objects.filter(special = "after_mainmovie"):
+                playlist.add_film(afilm)
+
     def get_movie_data(self):
         vdraw = FFMPEG_TOOLS.get_file_info(self.get_path())
         data = json.loads(vdraw)
@@ -115,6 +124,15 @@ class Film(models.Model):
 
     def get_absolute_url(self):
         return reverse('film_info_page', kwargs={'film_id' : self.pk})
+
+    def set_active_stream(self, stream_id):
+        stream = FilmStream.objects.get(pk=stream_id, film=self)
+        if stream.type == "audio":
+            self.audio_stream = stream
+            self.save()
+        elif stream.type == "subtitle":
+            self.subtitle_stream = stream
+            self.save()
 
     def get_subtitle_name(self):
         if self.subtitle:

@@ -20,6 +20,8 @@ class FilmForm(forms.ModelForm):
                                         film_id=self.instance.id).filter(type='subtitle').filter(name__in=["ass", "subrip"])
 @admin.register(Film)
 class FilmAdmin(admin.ModelAdmin):
+    search_fields = ["video", "name"]
+    list_filter = ["playlist_set__name"]
     list_display = ('__str__', 'video', 'subtitle')
     fieldsets  = (
         (None, {"fields": ('video', "name")}),

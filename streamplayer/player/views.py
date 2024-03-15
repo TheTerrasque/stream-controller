@@ -90,7 +90,7 @@ def upload_film(request):
     if request.method == "POST":
         form = FilmForm(request.POST, request.FILES)
         if form.is_valid():
-            film = form.save()
+            film: Film = form.save()
 
             print("Film length: ", film.video_length())
 
@@ -100,13 +100,7 @@ def upload_film(request):
                 playlist.add_film(film)
 
             if form.cleaned_data['guild_movie']:
-                for playlist in Playlist.objects.filter(for_guild_movie=True):
-                    playlist.clear()
-                    for afilm in Film.objects.filter(special = "before_mainmovie"):
-                        playlist.add_film(afilm)
-                    playlist.add_film(film)
-                    for afilm in Film.objects.filter(special = "after_mainmovie"):
-                        playlist.add_film(afilm)
+                film.set_as_guild_movie()
             return JsonResponse({'id': film.id, 
                                  "url": film.get_absolute_url(), 
                                  "name": str(film)})
@@ -115,9 +109,17 @@ def upload_film(request):
     playlists = Playlist.objects.filter(active=True)
     return render(request, 'streamplayer/upload.html', {'form': form, "playlists": playlists})
 
+
 @login_required
 def film_info(request, film_id):
     film: Film = Film.objects.get(pk=film_id)
+    if request.method == "POST":
+        if request.POST.get("stream_index"):
+            film.set_active_stream(request.POST.get("stream_index"))
+        if request.POST.get("rescan"):
+            film.get_movie_data()
+        if request.POST.get("guild_movie"):
+
     return JsonResponse({'name': str(film), 'info': film.get_movie_data(), "subtitle": film.get_subtitle_string()}) 
 
 @login_required

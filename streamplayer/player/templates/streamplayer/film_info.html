@@ -7,6 +7,16 @@
 {% block content %}
 
 <h1>{{ film }}</h1>
+<form action="{% url 'film_info_page' film.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="rescan" value="true">
+    <input type="submit" value="Rescan metadata">
+</form>
+<form action="{% url 'film_info_page' film.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="guild_movie" value="true">
+    <input type="submit" value="Set as guild movie">
+</form>
 <div>Subtitle: {{ film.get_subtitle_name | default:"No subtitle" }}</div>
 <div>
     <h2>Streams</h2>
@@ -23,7 +33,13 @@
             <td>{{ stream.type }}</td>
             <td>{{ stream.title }} [{{ stream.language }}]</td>
             <td>{{ stream.name }}</td>
-            <td></td>
+            <td>
+                <form action="{% url 'film_info_page' film.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="stream_index" value="{{ stream.index }}">
+                    <input type="submit" value="Set as active">
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
