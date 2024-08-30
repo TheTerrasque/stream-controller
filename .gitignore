@@ -6,3 +6,6 @@ docker/ffmpeg.exe
 docker/ffprobe
 docker/ffprobe.exe
 *.side
+*.sqlite
+localtest/
+static/

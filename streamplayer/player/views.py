@@ -91,9 +91,6 @@ def upload_film(request):
         form = FilmForm(request.POST, request.FILES)
         if form.is_valid():
             film: Film = form.save()
-
-            print("Film length: ", film.video_length())
-
             playlist = request.GET.get('playlist')
             if playlist:
                 playlist = Playlist.objects.get(pk=playlist)
@@ -118,8 +115,6 @@ def film_info(request, film_id):
             film.set_active_stream(request.POST.get("stream_index"))
         if request.POST.get("rescan"):
             film.get_movie_data()
-        if request.POST.get("guild_movie"):
-
     return JsonResponse({'name': str(film), 'info': film.get_movie_data(), "subtitle": film.get_subtitle_string()}) 
 
 @login_required

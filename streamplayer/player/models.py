@@ -47,6 +47,8 @@ class Film(models.Model):
     volume_normalization = models.CharField(default="d", help_text="Normalize audio volume", choices=[("d", "Stream Default"), ("yes", "On"), ("no", "Off")], max_length=5)
     special = models.CharField(max_length=255, blank=True, null=True, choices=[(x, x) for x in SPECIAL_VIDEOS]) 
 
+    status = models.CharField(max_length=255, default="new", choices = [(x, x.capitalize()) for x in ("new", "scanning", "processed")])
+
     def as_json(self):
         return dict(
             id=self.id,
@@ -93,6 +95,9 @@ class Film(models.Model):
                 playlist.add_film(afilm)
 
     def get_movie_data(self):
+        self.status = "scanning"
+        self.save()
+        
         vdraw = FFMPEG_TOOLS.get_file_info(self.get_path())
         data = json.loads(vdraw)
         self.videodata = data
@@ -114,6 +119,7 @@ class Film(models.Model):
             streamindex[stream['codec_type']] += 1
         if main10:
             self.workaround_for_10bit_hevc = True
+        self.status = "processed"
         self.save()
 
     def get_path(self):
@@ -277,7 +283,7 @@ class Stream(models.Model):
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 # method for updating
-@receiver(post_save, sender=Film, dispatch_uid="update_stock_count")
-def update_film_data(sender, instance: Film, **kwargs):
-    if kwargs['created']:
-        instance.get_movie_data()
+# @receiver(post_save, sender=Film, dispatch_uid="update_stock_count")
+# def update_film_data(sender, instance: Film, **kwargs):
+#     if kwargs['created']:
+#         instance.get_movie_data()

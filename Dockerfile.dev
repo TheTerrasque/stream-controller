@@ -1,0 +1,11 @@
+FROM python:3.10-slim-buster
+
+RUN apt-get -y update && apt-get -y upgrade && apt-get install -y fontconfig ttf-dejavu git procps nginx && apt-get clean
+COPY requirements.txt /workspaces/webstart2/requirements.txt
+RUN pip install -r /workspaces/webstart2/requirements.txt
+
+ENV FFMPEG_PATH=../docker/ffmpeg
+ENV FFPROBE_PATH=../docker/ffprobe
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000

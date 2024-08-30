@@ -1,3 +1,8 @@
+To run (docker):
+    1. Follow instructions in "docker/get-ffmpeg.txt" for Docker
+    2. Run "docker compose up"
+    3. Visit http://localhost:8082
+
 env vars:
     FFMPEG_PATH
     DJANGO_UPLOAD_FOLDER

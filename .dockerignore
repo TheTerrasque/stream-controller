@@ -1,5 +1,7 @@
 **/*.pyc
 **/upload/
-**/db.sqlite3
+**/*.sqlite3
 .git
 *.side
+**/localtest/
+**/static/

@@ -80,8 +80,8 @@ DATABASES = {
     }
 }
 
-FFMPEG_PATH  = os.getenv("FFMPEG_PATH", r"..\\docker\\ffmpeg.exe")
-FFPROBE_PATH  = os.getenv("FFPROBE_PATH", r"..\\docker\\ffprobe.exe")
+FFMPEG_PATH  = os.getenv("FFMPEG_PATH", BASE_DIR / "docker" / "ffmpeg")
+FFPROBE_PATH  = os.getenv("FFPROBE_PATH", BASE_DIR / "docker" / "ffprobe")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -118,9 +118,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "static"
 
 LOGOUT_REDIRECT_URL = '/'
 MEDIA_ROOT = os.getenv("DJANGO_UPLOAD_FOLDER") or BASE_DIR / 'upload'
+MEDIA_URL = "/media/"
 
 if os.getenv("FILE_UPLOAD_TEMP_DIR"):
     os.makedirs(os.getenv("FILE_UPLOAD_TEMP_DIR"), exist_ok=True)

@@ -17,4 +17,4 @@ class FilmForm(forms.ModelForm):
     guild_movie = forms.BooleanField(required=False, label="Is Next Guild Movie", help_text="If set, guild movie playlist will be cleared and this film will be added to it")
     class Meta:
         model = Film
-        fields = ['video']
+        fields = ['video', "subtitle"]
