@@ -74,6 +74,9 @@
         for (const subtitle of data.data) {
             for (const file of subtitle.attributes.files) {
                 const row = document.createElement("tr");
+                if (subtitle.attributes.moviehash_match) {
+                    row.classList.add("moviehashmatch")
+                }
                 const language = document.createElement("td");
                 const download = document.createElement("td");
                 const downloadLink = document.createElement("a");
@@ -89,5 +92,11 @@
         searchBtn.disabled = false;
     });
 </script>
+<style>
+    .moviehashmatch {
+        background-color: yellow;
+    }
+</style>
+
 {% endif %}
 {% endblock %}
