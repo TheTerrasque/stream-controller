@@ -139,10 +139,10 @@ except:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-FILE_UPLOAD_HANDLERS = [
-    'django.core.files.uploadhandler.MemoryFileUploadHandler',
-    'streamplayer.BigChunkUploadHandler.ChunkedUploadHandler',
-]
+# FILE_UPLOAD_HANDLERS = [
+#     'django.core.files.uploadhandler.MemoryFileUploadHandler',
+#     'streamplayer.BigChunkUploadHandler.ChunkedUploadHandler',
+# ]
 
 # https://www.opensubtitles.com/en/consumers
 OPENSUBTITLES_API_KEY = os.getenv("OPENSUBTITLES_API_KEY")
