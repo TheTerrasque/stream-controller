@@ -2,6 +2,7 @@
 **/upload/
 **/*.sqlite3
 .git
+.venv
 *.side
 **/localtest/
 **/static/

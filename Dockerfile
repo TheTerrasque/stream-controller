@@ -1,11 +1,16 @@
-FROM python:3.10-slim-buster
-
+FROM python:3.10-slim
 WORKDIR /app
 
-RUN apt-get -y update && apt-get -y upgrade && apt-get install -y fontconfig ttf-dejavu nginx && apt-get clean
+RUN apt-get -y update && apt-get -y upgrade && apt-get install -y fontconfig fonts-dejavu nginx curl && apt-get clean
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy project files
+COPY pyproject.toml /app/pyproject.toml
+
+# Install dependencies using uv
+RUN uv pip install --system -r pyproject.toml
 COPY docker/ffmpeg /app/ffmpeg
 COPY docker/ffprobe /app/ffprobe
 COPY streamplayer/ /app/

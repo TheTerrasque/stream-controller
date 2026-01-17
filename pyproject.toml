@@ -1,0 +1,18 @@
+[project]
+name = "streamplayer"
+version = "0.1.0"
+description = "Django-based stream player application"
+requires-python = ">=3.10"
+dependencies = [
+    "django==4.2.8",
+    "requests",
+    "supervisor",
+    "gunicorn",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
