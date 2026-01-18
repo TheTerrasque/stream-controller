@@ -16,10 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from django.views.generic import TemplateView
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', lambda x: redirect("/streams")),
     path('streams/', include('player.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
+    #path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/account/', login_required(TemplateView.as_view(template_name='account/account.html')), name='account_account'),
+    path('accounts/', include('allauth.urls')),
 ]

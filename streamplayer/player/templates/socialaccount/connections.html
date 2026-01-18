@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% load socialaccount %}
+
+{% block title %}Connected Accounts{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <h2>Connected Accounts</h2>
+
+        {% if form.accounts %}
+        <p>You can sign in to your account using any of the following third-party accounts:</p>
+        <form method="post" action="{% url 'socialaccount_connections' %}">
+            {% csrf_token %}
+            <ul class="list-group mb-3">
+                {% for acc in form.fields.account.choices %}
+                {% with account=acc.0.instance.get_provider_account %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <input type="radio" name="account" value="{{ account.account.pk }}" id="account_{{ account.account.pk }}">
+                        <label for="account_{{ account.account.pk }}">
+                            <strong>{{ account.get_brand.name }}</strong>
+                            ({{ account }})
+                        </label>
+                    </div>
+                </li>
+                {% endwith %}
+                {% endfor %}
+            </ul>
+            <button type="submit" class="btn btn-danger btn-sm">Remove Selected</button>
+        </form>
+        {% else %}
+        <p class="text-muted">No third-party accounts are connected to your account.</p>
+        {% endif %}
+
+        {% get_providers as socialaccount_providers %}
+        {% if socialaccount_providers %}
+        <h5 class="mt-4">Add a Connection</h5>
+        <p>Connect your account with one of the following providers:</p>
+        <ul class="list-group">
+            {% for provider in socialaccount_providers %}
+            <li class="list-group-item">
+                <a href="{% provider_login_url provider.id process='connect' %}">{{ provider.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <hr class="mt-4">
+        <a href="{% url 'account_account' %}">&larr; Back to Account</a>
+    </div>
+</div>
+{% endblock %}

@@ -27,5 +27,22 @@ env vars:
     SUBTITLE_DEFAULT_SIZE
     OPENSUBTITLES_API_KEY # https://www.opensubtitles.com/en/consumers
 
+Adding an OIDC provider (e.g. Authentik, Keycloak):
+    1. Go to Django Admin -> Social Applications -> Add
+    2. Provider: OpenID Connect
+    3. Provider ID: unique slug (e.g. "my-authentik")
+    4. Name: Display name shown to users
+    5. Client ID: from your OIDC provider
+    6. Secret: from your OIDC provider
+    7. Settings (JSON):
+       {"server_url": "https://your-provider.com/application/o/your-app/"}
+    8. Save
+
+    For more settings, see: https://docs.allauth.org/en/latest/socialaccount/configuration.html
+
+Local settings:
+    Create streamplayer/streamplayer/local_settings.py to override Django settings.
+    This file is imported at the end of settings.py and is gitignored.
+
 build:
     docker build . --push -t terrasque/streamcontrol:<ver>

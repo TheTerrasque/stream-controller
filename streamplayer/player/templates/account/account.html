@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <h2>Account Settings</h2>
+        <p>Logged in as <strong>{{ user.username }}</strong></p>
+
+        <ul class="list-group">
+            <li class="list-group-item"><a href="{% url 'account_email' %}">Manage Email Addresses</a></li>
+            <li class="list-group-item"><a href="{% url 'account_change_password' %}">Change Password</a></li>
+            <li class="list-group-item"><a href="{% url 'socialaccount_connections' %}">Connected Accounts</a></li>
+            <li class="list-group-item"><a href="{% url 'account_logout' %}">Logout</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

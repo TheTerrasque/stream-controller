@@ -8,6 +8,7 @@ dependencies = [
     "requests",
     "supervisor",
     "gunicorn",
+    "django-allauth[socialaccount]>=65.1.0",
 ]
 
 [build-system]

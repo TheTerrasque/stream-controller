@@ -2,6 +2,10 @@ from django import forms
 from django.contrib.auth.models import User
 from player.models import Film, Stream
 
+import django.conf
+from allauth.account.forms import AddEmailForm
+from allauth.account.models import EmailAddress
+
 class NewAdminAccountForm(forms.Form):
     name = forms.CharField(label='Username', max_length=100)
     password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)
@@ -18,3 +22,16 @@ class FilmForm(forms.ModelForm):
     class Meta:
         model = Film
         fields = ['video', "subtitle"]
+
+
+class AddEmailFormRespectingVerification(AddEmailForm):
+    """
+    This is the default AddEmailForm with the only difference
+    being that it sends no verification email if ACCOUNT_EMAIL_VERIFICATION is 'none'.
+    """
+
+    def save(self, request):
+        confirm = django.conf.settings.ACCOUNT_EMAIL_VERIFICATION != "none"
+        return EmailAddress.objects.add_email(
+            request, self.user, self.cleaned_data["email"], confirm=confirm
+        )

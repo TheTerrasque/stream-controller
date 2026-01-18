@@ -36,7 +36,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     "player",
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.openid_connect',
+    'allauth.socialaccount.providers.discord',
+]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",    
 ]
 
 ROOT_URLCONF = 'streamplayer.urls'
@@ -68,7 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'streamplayer.wsgi.application'
-
+LOGIN_REDIRECT_URL = "/streams"
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -148,3 +164,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 OPENSUBTITLES_API_KEY = os.getenv("OPENSUBTITLES_API_KEY")
 
 CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE = os.getenv("CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE") and int(os.getenv("CHUNKED_UPLOADER_HANDLER_CHUNK_SIZE")) or 1024 * 1024
+
+ACCOUNT_ADAPTER = "streamplayer.adapters.NoSignupAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "streamplayer.adapters.SocialAccountAdapter"
+
+ACCOUNT_FORMS = {
+   # replace the default form
+    "add_email": "player.forms.AddEmailFormRespectingVerification"
+}
+SOCIALACCOUNT_EMAIL_AUTHENTICATION  = True
+
+SESSION_COOKIE_AGE = 86400 * 33 # 33 days session
+
+# Verify email address on signup or when adding an email to an account
+# Options: mandatory, optional, none
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Enable or disable registration for local or social accounts
+ACCOUNT_ALLOW_REGISTRATION = False
+SOCIALACCOUNT_ALLOW_REGISTRATION = False
+
+# Import local settings if they exist
+try:
+    from .local_settings import *
+except ImportError:
+    pass

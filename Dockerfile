@@ -10,7 +10,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 COPY pyproject.toml /app/pyproject.toml
 
 # Install dependencies using uv
-RUN uv pip install --system -r pyproject.toml
+RUN uv pip install --system -r pyproject.toml && uv cache clean
 COPY docker/ffmpeg /app/ffmpeg
 COPY docker/ffprobe /app/ffprobe
 COPY streamplayer/ /app/

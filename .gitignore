@@ -9,3 +9,4 @@ docker/ffprobe.exe
 *.sqlite
 localtest/
 static/
+**/local_settings.py

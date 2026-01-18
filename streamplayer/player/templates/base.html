@@ -30,9 +30,17 @@
                         <a href="/admin" class="btn btn-primary">Admin</a>
                     {% endif %}
                     <a href="/streams/film/upload" class="btn btn-primary">Upload film</a>
-                    <a href="/accounts/logout" class="btn btn-primary">Log out</a>
+                    <a href="{% url 'account_account' %}" class="btn btn-primary">Account</a>
                 </div>
             </div>
+            {% endif %}
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
             {% endif %}
             {% block content %}{% endblock %}
         </div>
