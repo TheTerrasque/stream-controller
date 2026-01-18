@@ -1,11 +1,17 @@
 [program:server]
-command=gunicorn streamplayer.wsgi
+command=bash -c 'exec gunicorn streamplayer.wsgi 2>&1 | sed -u "s/^/[server] /"'
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 
 [program:background_worker]
-command=python manage.py scanfilminfo
+command=bash -c 'exec python manage.py scanfilminfo 2>&1 | sed -u "s/^/[worker] /"'
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 
 [program:nginx]
-command=/usr/sbin/nginx -c nginx.conf -p .
+command=bash -c 'exec /usr/sbin/nginx -c nginx.conf -p . 2>&1 | sed -u "s/^/[nginx] /"'
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 
 [supervisord]
 logfile=/tmp/supervisord.log ; main log file; default $CWD/supervisord.log

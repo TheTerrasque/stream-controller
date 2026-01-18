@@ -3,6 +3,11 @@ services:
     build: .
     ports:
       - "8082:8000"
+    volumes:
+      - ./data:/data
+    environment:
+      - DJANGO_UPLOAD_FOLDER=/data/upload
+      - DJANGO_SQLITE_PATH=/data/db.sqlite
   streamer:
     image: terrasque/docker-nginx-rtmp:2
     ports:
