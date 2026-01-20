@@ -24,6 +24,7 @@ urlpatterns = [
     path('stream/<int:stream_id>.json', V.stream_info, name='stream-json'),
     path('stream/<int:stream_id>/play', V.play, name='play'),
     path('stream/<int:stream_id>/stop', V.stop, name='stop'),
+    path('stream/<int:stream_id>/clear_queue', V.clear_queue, name='clear_queue'),
     path('film/<int:film_id>.json', V.film_info, name='film_info'),
     path('film/<int:film_id>', V.film_info_page, name='film_info_page'),
     path('film/upload', V.upload_film, name='upload_film'),

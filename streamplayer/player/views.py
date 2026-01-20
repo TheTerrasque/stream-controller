@@ -49,11 +49,12 @@ def stream(request, stream_id):
 def stream_info(request, stream_id):
     stream: Stream = Stream.objects.get(pk=stream_id)
     player = stream.get_stream_player()
-    data = {'name': stream.name, 
-        'url': stream.url, 
+    data = {'name': stream.name,
+        'url': stream.url,
         'link': stream.link,
         "player": None,
-        "stopUrl": stream.get_stop_url()}
+        "stopUrl": stream.get_stop_url(),
+        "queued": player.get_queued_info()}
     if (player.playlist):
         data['player'] = {
             'activePlaylist': player.playlist.name,
@@ -81,7 +82,22 @@ def play(request, stream_id):
             film = None
             if fileid:
                 film = Film.objects.get(pk=fileid)
-            stream.play_playlist(playlist, film)
+
+            # Check if we should queue instead of play immediately
+            queue_after = request.POST.get('queue_after_current')
+            player = stream.get_stream_player()
+            if queue_after and player.streamer.is_playing():
+                player.queue_playlist(playlist, film)
+            else:
+                stream.play_playlist(playlist, film)
+    return redirect("stream", stream_id=stream_id)
+
+
+@login_required
+def clear_queue(request, stream_id):
+    if request.method == "POST":
+        stream: Stream = Stream.objects.get(pk=stream_id)
+        stream.get_stream_player().clear_queue()
     return redirect("stream", stream_id=stream_id)
 
 

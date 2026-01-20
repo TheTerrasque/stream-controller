@@ -52,16 +52,37 @@ playlists
         </div>
     </div>
 
+    <div class="row m-4" id="queuedInfo" style="display:none">
+        <div class="col">
+            <h5>Queued next</h5>
+        </div>
+        <div class="col" id="queuedPlaylist">
+        </div>
+        <div class="col" id="queuedFilm">
+        </div>
+        <div class="col">
+            <form action="{% url 'clear_queue' activestream.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Clear queue</button>
+            </form>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col">
             <h4>Playlists</h4>
+            <div class="form-check mb-2 p-2 ps-4 rounded" id="queueModeContainer" style="display:none">
+                <input class="form-check-input" type="checkbox" id="queueModeCheckbox">
+                <label class="form-check-label" for="queueModeCheckbox"><strong>Queue next play</strong> <small class="text-muted">(start after current film ends)</small></label>
+            </div>
             <i>Note: It's normal to take some seconds and up to half a minute between changing here and it showing on
                 stream</i>
             {% for playlist in playlists %}
             {% if playlist.is_active %}
-            <form action="{{ activestream.get_play_url }}" method="post" class="p-1">
-                {% csrf_token %} 
+            <form action="{{ activestream.get_play_url }}" method="post" class="p-1 playlist-form">
+                {% csrf_token %}
                 <input type="hidden" name="playlist" value="{{ playlist.id }}">
+                <input type="hidden" name="queue_after_current" value="" class="queue-hidden-input">
                 <div class="btn-group w-75" role="group">
                     <button type="submit" class="btn 
                     {% if player.playlist == playlist %}btn-primary{% else %}btn-outline-primary{% endif %} 
@@ -144,6 +165,8 @@ playlists
             setInactive(".playlistButton");
             setInactive(".playlistFilmButton");
             setInactive(".playlistFilmSelector");
+            // hide queue mode checkbox when not playing
+            document.getElementById("queueModeContainer").style.display = "none";
         }
 
         function setPlaying(playlist, film) {
@@ -156,12 +179,28 @@ playlists
             setActive("#playlist-button-" + playlist);
             setActive("#playlist-" + playlist + "-film-button-" + film);
             setActive("#playlistFilmSelector-" + playlist);
+            // show queue mode checkbox when playing
+            document.getElementById("queueModeContainer").style.display = "block";
+        }
+
+        function updateQueueDisplay(queuedData) {
+            const queuedInfo = document.getElementById("queuedInfo");
+            if (queuedData) {
+                queuedInfo.style.display = "flex";
+                document.getElementById("queuedPlaylist").innerText = queuedData.playlist;
+                document.getElementById("queuedFilm").innerText = queuedData.startFilm || "(from start)";
+            } else {
+                queuedInfo.style.display = "none";
+            }
         }
 
         function getStreamData() {
             fetch("{{ activestream.get_json_info_url }}")
                 .then(response => response.json())
                 .then(data => {
+                    // Update queue display
+                    updateQueueDisplay(data.queued);
+
                     if (! data.player || ! data.player.activeMovieTime) {
                         setNotPlaying();
                         return;
@@ -178,6 +217,20 @@ playlists
                 });
         }
         setInterval(getStreamData, 1000);
+
+        // Sync global queue checkbox to all playlist forms
+        const queueModeCheckbox = document.getElementById("queueModeCheckbox");
+        const queueModeContainer = document.getElementById("queueModeContainer");
+        queueModeCheckbox.addEventListener("change", function() {
+            const value = this.checked ? "1" : "";
+            document.querySelectorAll(".queue-hidden-input").forEach(input => input.value = value);
+            // Visual feedback for queue mode
+            if (this.checked) {
+                queueModeContainer.classList.add("bg-warning", "bg-opacity-25", "border", "border-warning");
+            } else {
+                queueModeContainer.classList.remove("bg-warning", "bg-opacity-25", "border", "border-warning");
+            }
+        });
 
     </script>
 {% endblock %}

@@ -18,6 +18,10 @@ class Player:
     next_film_index = 0
     current_film_start_time = 0
 
+    # Queue for "play after current" feature
+    queued_playlist: "Playlist" = None
+    queued_start_film: "Film" = None
+
     def __init__(self, stream: "Stream", streamer: FFMPEG_STREAMER = None) -> None:  # type: ignore
         if streamer:
             self.streamer = streamer
@@ -50,6 +54,30 @@ class Player:
         self.films = []
         self.active_film_index = 0
         self.next_film_index = 0
+        self.queued_playlist = None
+        self.queued_start_film = None
+
+    def queue_playlist(self, playlist: "Playlist", startfilm: "Film" = None):
+        """Queue a playlist to start after the current film finishes."""
+        self.queued_playlist = playlist
+        self.queued_start_film = startfilm
+        logger.info("Queued playlist: %s (start film: %s)", playlist.name, startfilm)
+
+    def clear_queue(self):
+        """Clear the queued playlist."""
+        self.queued_playlist = None
+        self.queued_start_film = None
+
+    def get_queued_info(self):
+        """Return info about the queued playlist for API responses."""
+        if not self.queued_playlist:
+            return None
+        return {
+            "playlist": self.queued_playlist.name,
+            "playlistId": self.queued_playlist.id,
+            "startFilm": str(self.queued_start_film) if self.queued_start_film else None,
+            "startFilmId": self.queued_start_film.id if self.queued_start_film else None,
+        }
 
     def get_active_movie(self) -> Optional["Film"]:
         if not self.films:
@@ -73,7 +101,15 @@ class Player:
         while True:
             try:
                 if not self.streamer.is_playing():
-                    if self.playlist:
+                    # Check if something is queued - takes priority
+                    if self.queued_playlist:
+                        logger.info("Starting queued playlist: %s", self.queued_playlist.name)
+                        queued = self.queued_playlist
+                        startfilm = self.queued_start_film
+                        self.queued_playlist = None
+                        self.queued_start_film = None
+                        self.play_playlist(queued, startfilm)
+                    elif self.playlist:
                         next = self.get_next()
                         if next:
                             logger.info("Got next: %s" % next.video)
