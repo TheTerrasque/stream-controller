@@ -5,6 +5,6 @@
 .venv
 *.side
 **/localtest/
-**/static/
+/static/
 **/local_settings.py
 data/

@@ -14,6 +14,16 @@
         crossorigin="anonymous"></script>
 
     <link rel="shortcut icon" type="image/ico" href="{% static 'favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'dark-theme.css' %}" />
+    <script>
+        // Apply saved theme immediately to prevent flash
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark-theme-pending');
+        }
+    </script>
+    <style>
+        html.dark-theme-pending { background-color: #1a1a1a; }
+    </style>
 </head>
 
 <body>
@@ -31,6 +41,7 @@
                     {% endif %}
                     <a href="/streams/film/upload" class="btn btn-primary">Upload film</a>
                     <a href="{% url 'account_account' %}" class="btn btn-primary">Account</a>
+                    <button type="button" class="btn btn-outline-secondary" id="theme-toggle"></button>
                 </div>
             </div>
             {% endif %}
@@ -44,6 +55,35 @@
             {% endif %}
             {% block content %}{% endblock %}
         </div>
+    </div>
+    <script>
+        (function() {
+            const toggle = document.getElementById('theme-toggle');
+            const savedTheme = localStorage.getItem('theme');
+            document.documentElement.classList.remove('dark-theme-pending');
+
+            function applyTheme(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+                if (toggle) {
+                    toggle.textContent = isDark ? '\u263C' : '\u263E';
+                }
+            }
+
+            applyTheme(savedTheme === 'dark');
+
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    const isDark = !document.body.classList.contains('dark-theme');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    applyTheme(isDark);
+                });
+            }
+        })();
+    </script>
 </body>
 
 </html>

@@ -8,6 +8,6 @@ docker/ffprobe.exe
 *.side
 *.sqlite
 localtest/
-static/
+/static/
 **/local_settings.py
 data/
