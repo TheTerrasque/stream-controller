@@ -94,7 +94,14 @@ class FFMPEG_STREAMER:
         args = [
             self.ffmpeg, 
             "-copyts", 
-            "-re", # realtime playback
+            # Realtime playback. Not plain "-re": in ffmpeg 7+ that is -readrate 1 with a 0.5 s
+            # initial burst and catch-up at the same rate. Files whose audio and video are
+            # interleaved coarsely make one stream "lag" over and over; each lag is then only
+            # recovered at 1x, so the output sank to ~0.65x real time over a few minutes.
+            # A faster catch-up (and a bit more burst) keeps it at 1x.
+            "-readrate", "1",
+            "-readrate_initial_burst", "2",
+            "-readrate_catchup", "2",
             "-i", video.get_path(), 
             "-crf", str(self.stream.settings.crf),
             "-preset", self.stream.settings.encoding_preset,
